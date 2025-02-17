@@ -4,44 +4,50 @@ on:
   push:
     branches:
       - main
-    pull_request:
-      branches: [main]
-      types: [opened, synchronize]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
 
 jobs:
-  pipeline:
-    runs-on: ubuntu-20.04
+  test:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      
-      - name: Install dependencies
-        run: npm install
+    - name: Checkout code
+      uses: actions/checkout@v3  # Obtener el código fuente
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3  # Actualizar a la última versión compatible
+      with:
+        node-version: '20'  # Configura Node.js versión 14
+    
+    - name: Install dependencies
+      run: npm install  # Instalar dependencias
+    
+    - name: Run unit tests
+      run: npm test  # Ejecutar pruebas unitarias
 
-      - name: Run Build
-        run: npm run build
+  build:
+    needs: test  # Asegura que las pruebas se ejecuten antes de este paso
+    runs-on: ubuntu-latest
 
-      - name: Run tests
-        run: npm test
-        
-      - name: Trigger deployment
-        if: ${{ github.event_name == 'push' }}
-        run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
+    steps:
+    - name: Trigger deployment
+      if: ${{ github.event_name == 'push' }}
+      run: |
+        curl -X POST https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
+        echo "Deployment triggered."
+
   tag_release:
-    needs: [pipeline]
-    runs-on: ubuntu-20.04
+    needs: build  # Asegura que el 'build' se ejecute antes de este paso
+    runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Bump version and push tag
-        uses: anothrNick/github-tag-action@v1
-        if: ${{ github.event_name == 'push' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Checkout code
+      uses: actions/checkout@v3  # Obtener el código fuente
+
+    - name: Bump version and push tag
+      if: ${{ github.event_name == 'push' }}
+      uses: anothrNick/github-tag-action@1.71.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
