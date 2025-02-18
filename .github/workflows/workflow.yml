@@ -28,11 +28,40 @@ jobs:
     - name: Run unit tests
       run: npm test  # Ejecutar pruebas unitarias
 
-  deploy:
+  build:
     needs: test  # Asegura que las pruebas se ejecuten antes de este paso
     runs-on: ubuntu-latest
 
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v3  # Obtener el código fuente
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3  # Asegurarse de que Node.js esté configurado
+    
+    - name: Install dependencies
+      run: npm install  # Instalar dependencias
+    
+    - name: Run build
+      run: npm run build  # Ejecutar el build
+
+  deploy:
+    needs: build  # Asegura que las pruebas se ejecuten antes de este paso
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3  # Obtener el código fuente
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3  # Configurar Node.js
+    
+    - name: Install dependencies
+      run: npm install  # Instalar dependencias necesarias
+    
+    - name: Run start
+      run: npm start  # Ejecutar el servidor (start)
+
     - name: Trigger deployment
       if: ${{ github.event_name == 'push' }}
       run: |
