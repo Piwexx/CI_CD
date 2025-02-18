@@ -7,29 +7,9 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize]
-  
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3  # Obtener el código fuente
-    
-    - name: Set up Node.js
-      uses: actions/setup-node@v3  # Actualizar a la última versión compatible
-      with:
-        node-version: '20'  # Configura Node.js versión 14
-    
-    - name: Install dependencies
-      run: npm install  # Instalar dependencias
-    
-    - name: Run unit tests
-      run: npm test  # Ejecutar pruebas unitarias
-
   build:
-    needs: test  # Asegura que las pruebas se ejecuten antes de este paso
     runs-on: ubuntu-latest
 
     steps:
@@ -44,9 +24,40 @@ jobs:
     
     - name: Run build
       run: npm run build  # Ejecutar el build
+    
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: dist
+        path: dist  # Corregido 'patch' a 'path'
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3  # Obtener el código fuente
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3  # Actualizar a la última versión compatible
+      with:
+        node-version: '20'  # Configura Node.js versión 14
+    
+    - name: Install dependencies
+      run: npm install  # Instalar dependencias
+    
+    - name: Download build artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: dist
+        path: dist  # Corregido 'patch' a 'path'
+    
+    - name: Run unit tests
+      run: npm test  # Ejecutar pruebas unitarias
 
   deploy:
-    needs: build  # Asegura que las pruebas se ejecuten antes de este paso
+    needs: [build, test]  # Asegura que las pruebas se ejecuten antes de este paso
     runs-on: ubuntu-latest
 
     steps:
