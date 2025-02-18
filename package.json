@@ -8,7 +8,8 @@
     "start": "node app.js",
     "test": "jest",
     "eslint": "eslint './**/*.{js,jsx}'",
-    "build": "webpack --mode production"
+    "build": "webpack --mode production",
+    "build-and-start": "npm run build && npm start"
   },
   "repository": {
     "type": "git",
