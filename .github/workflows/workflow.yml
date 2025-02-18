@@ -7,6 +7,7 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize]
+  
 
 jobs:
   test:
@@ -27,7 +28,7 @@ jobs:
     - name: Run unit tests
       run: npm test  # Ejecutar pruebas unitarias
 
-  build:
+  deploy:
     needs: test  # Asegura que las pruebas se ejecuten antes de este paso
     runs-on: ubuntu-latest
 
@@ -39,7 +40,7 @@ jobs:
         echo "Deployment triggered."
 
   tag_release:
-    needs: build  # Asegura que el 'build' se ejecute antes de este paso
+    needs: deploy  # Asegura que el 'build' se ejecute antes de este paso
     runs-on: ubuntu-latest
 
     steps:
