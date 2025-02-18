@@ -58,9 +58,6 @@ jobs:
     
     - name: Install dependencies
       run: npm install  # Instalar dependencias necesarias
-    
-    - name: Run start
-      run: npm start  # Ejecutar el servidor (start)
 
     - name: Trigger deployment
       if: ${{ github.event_name == 'push' }}
